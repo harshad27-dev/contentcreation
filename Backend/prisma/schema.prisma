@@ -1,0 +1,231 @@
+// Prisma Schema for ScriptAI
+// Faceless YouTube Automation Studio
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // For quick testing without PostgreSQL, using SQLite
+  // To switch to PostgreSQL, change provider to "postgresql" and update DATABASE_URL
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String?
+  name          String?
+  avatarUrl     String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts         Account[]
+  sessions         Session[]
+  projects         Project[]
+  subscriptions    Subscription[]
+  videos           Video[]
+  scripts          Script[]
+  apiKeys          ApiKey[]
+  contentCalendars ContentCalendar[]
+  usageAnalytics   UsageAnalytics[]
+  transactions     Transaction[]
+
+  // Limits
+  scriptsGenerated Int @default(0)
+  videosExported   Int @default(0)
+}
+
+// OAuth Accounts (Google, etc.)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// User Sessions
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Subscription Plans
+model Subscription {
+  id             String   @id @default(cuid())
+  userId         String
+  planType       String   // FREE, STARTER, CREATOR, PRO
+  status         String   // ACTIVE, CANCELLED, EXPIRED
+  razorpaySubscriptionId String?
+  razorpayCustomerId     String?
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Video Projects
+model Project {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  channelName String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videos  Video[]
+  scripts Script[]
+}
+
+// AI Scripts
+model Script {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?
+  title       String
+  topic       String
+  content     String   // Long text content stored as string
+  tone        String   // Energetic, Dramatic, Educational, etc.
+  duration    String   // 60s, 3min, 8min, etc.
+  audience    String?
+  format      String   // YouTube, Shorts, Podcast, TikTok
+  aiModel     String   // LLaMA, GPT-4o, Claude, etc.
+  status      String   @default("draft") // draft, approved, rejected
+  scenes      Json     // Array of scenes with hooks, narration, B-roll tags
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  videos  Video[]
+}
+
+// Gameplay Video Clips
+model VideoClip {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  game        String   // Minecraft, GTA, Subway Surfers, Fortnite, etc.
+  mood        String   // Action, Calm, Fast, Slow, etc.
+  duration    Int      // in seconds
+  resolution  String   // 1080p, 4K, etc.
+  aspectRatio String   // 16:9, 9:16, etc.
+  url         String   // R2/S3 URL
+  thumbnailUrl String?
+  tags        String?  // JSON array stored as string
+  isPremium   Boolean  @default(false)
+  uploadDate  DateTime @default(now())
+
+  videos Video[]
+}
+
+// Final Videos
+model Video {
+  id              String   @id @default(cuid())
+  userId          String
+  projectId       String?
+  scriptId        String?
+  title           String
+  description     String?
+  format          String   // 16:9, 9:16
+  resolution      String   // 720p, 1080p, 4K
+  status          String   // processing, ready, failed, published
+  youtubeVideoId  String?
+  youtubeUrl      String?
+  publishedAt     DateTime?
+  duration        Int      // in seconds
+  filePath        String   // R2/S3 URL
+  thumbnailPath   String?
+  subtitlesPath   String?
+  voiceoverStyle  String?
+  selectedClips   Json     // Array of selected VideoClip IDs
+  exportSettings  Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project    Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  script     Script?    @relation(fields: [scriptId], references: [id], onDelete: SetNull)
+  videoClips VideoClip[]
+}
+
+// API Keys for Developer Tier
+model ApiKey {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  key         String   @unique
+  permissions String?  // JSON array stored as string
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Content Calendar
+model ContentCalendar {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  topic     String
+  scheduledDate DateTime
+  status    String   // planned, in_progress, completed, skipped
+  scriptId  String?
+  videoId   String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Analytics & Usage Tracking
+model UsageAnalytics {
+  id        String   @id @default(cuid())
+  userId    String
+  eventType String   // script_generated, video_exported, model_used, etc.
+  metadata  Json
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Payment Transactions
+model Transaction {
+  id               String   @id @default(cuid())
+  userId           String
+  razorpayOrderId  String
+  razorpayPaymentId String?
+  razorpaySignature String?
+  amount           Int      // in paise
+  currency         String   @default("INR")
+  status           String   // pending, completed, failed, refunded
+  planType         String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

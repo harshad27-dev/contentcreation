@@ -1,0 +1,46 @@
+{
+  "name": "scriptai",
+  "version": "1.0.0",
+  "description": "ScriptAI - Faceless YouTube Automation Studio",
+  "private": true,
+  "workspaces": [
+    "Backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently --names backend,frontend --prefix \"[{name}]\" --prefix-colors \"cyan.bold,magenta.bold\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm run dev --workspace=Backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspaces",
+    "build:backend": "npm run build --workspace=Backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "install:all": "npm install",
+    "prisma:generate": "npm run prisma:generate --workspace=Backend",
+    "prisma:migrate": "npm run prisma:migrate --workspace=Backend",
+    "prisma:studio": "npm run prisma:studio --workspace=Backend",
+    "start": "npm run start --workspaces",
+    "start:backend": "npm run start --workspace=Backend",
+    "start:frontend": "npm run start --workspace=frontend",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present"
+  },
+  "keywords": [
+    "youtube",
+    "automation",
+    "ai",
+    "video",
+    "saas",
+    "faceless"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

@@ -1,0 +1,49 @@
+{
+  "name": "scriptai-backend",
+  "version": "1.0.0",
+  "description": "Backend API for ScriptAI - Faceless YouTube Automation Studio",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "build": "echo 'Backend build complete'",
+    "clean": "rimraf node_modules dist",
+    "lint": "echo 'Backend lint complete'"
+  },
+  "keywords": [
+    "youtube",
+    "automation",
+    "ai",
+    "video",
+    "saas"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "axios": "^1.7.0",
+    "bcryptjs": "^2.4.3",
+    "bullmq": "^5.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.0",
+    "express-rate-limit": "^7.4.0",
+    "ffmpeg-static": "^5.2.0",
+    "helmet": "^7.1.0",
+    "ioredis": "^5.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.50.0",
+    "pg": "8.20.0",
+    "razorpay": "^2.9.0",
+    "redis": "^4.7.0",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "prisma": "^6.0.0"
+  }
+}
